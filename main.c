@@ -1,3 +1,10 @@
+//
+//  main.c
+//  Project C ba3
+//
+//  Created by Manuel Bruppacher on 26.09.24.
+//
+
 #include <stdio.h>
 #include <stdlib.h>
 /**
@@ -9,7 +16,7 @@ Revisions
 int main()
 {
     FILE *fin;
-    fin = fopen("Pixmap.bin", "rb");//opening the file in byte mode
+    fin = fopen("/Users/manuel/Documents/Programming_C/Project C ba3/Pixmap.bin", "rb");//opening the file in byte mode
     if(fin==NULL) perror("erreur ouverture \n"); //error management
 
     int n=0; //total number of pixels
@@ -17,9 +24,24 @@ int main()
     //making the histogram
     //todo, read prof, larg, haut like on slide 27, the file pointer should move by itself
     //make the pixmap in a tableau dynamique
+    
+    
+    //read the first 3 bites, size of the image, width in pixels, hight in pixels
+    unsigned short *proflarghaut; //profondeur largeur hauteur
+    proflarghaut = malloc(3*sizeof(unsigned short)); // what about big files
+    size_t errf3b=fread(proflarghaut, sizeof(unsigned short), 3, fin); //read proflarghaut
+    
+    unsigned short profondeur = proflarghaut[0]; //assign the red values to variables
+    unsigned short largeur = proflarghaut[1];
+    unsigned short hauteur = proflarghaut[2];
+    
+    //print size, width and hight od the binfile
+    printf("Profondeur= %d \nLargeur= %d \nHauteur= %d \n", profondeur, largeur, hauteur);
+    
     while(!feof(fin))
     {
-        unsigned char b[1];
+        unsigned char *b;
+        b = malloc(sizeof(unsigned char));
         size_t r=fread(b, sizeof b[0], 1, fin); //todo: treat read errors
         histo[b[0]]++;
         n++;
@@ -62,6 +84,9 @@ int main()
             colours[k]=aux;
         }
     }
+    
+           
+    // print histogramm
     for(i=0; i<j; i++)
     {
         printf("%d %d \n", colours[i], histo[colours[i]]);
@@ -70,7 +95,7 @@ int main()
 
 
     //finding x and y for each colour
-    fin = fopen("Pixmap.bin", "rb"); //opening files
+    fin = fopen("/Users/manuel/Documents/Programming_C/Project C ba3/Pixmap.bin", "rb"); //opening files
     FILE *fout;
     fout = fopen("Traces.txt", "w"); //this one in write mode
     if(fin==NULL) perror("erreur ouverture \n"); //error management
@@ -82,3 +107,5 @@ int main()
     //we will assume that the greatest number of pixels will be the background (white or otherwise), the second largest number of pixels should be the borders
     return 0;
 }
+
+
