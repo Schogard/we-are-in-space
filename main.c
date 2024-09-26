@@ -4,20 +4,20 @@
 int main()
 {
     FILE *fin;
-    fin = fopen("Pixmap.bin", "rb");
-    if(fin==NULL) perror("erreur ouverture \n");
+    fin = fopen("Pixmap.bin", "rb");//opening the file in byte mode
+    if(fin==NULL) perror("erreur ouverture \n"); //error management
 
     int n=0; //total number of pixels
     int histo[257]={0};
-    //histogram fait
+    //making the histogram
     while(!feof(fin))
     {
         unsigned char b[1];
-        size_t r=fread(b, sizeof b[0], 1, fin);
+        size_t r=fread(b, sizeof b[0], 1, fin); //todo: treat read errors
         histo[b[0]]++;
         n++;
     }
-    fclose(fin);
+    fclose(fin); //closing file
 
 
     //determine colours, control points
@@ -60,5 +60,16 @@ int main()
         printf("%d %d \n", colours[i], histo[colours[i]]);
     }
     //at this point we have a vector of colours in decreasing order of number of pixels and the colour of the control points
+
+
+    //finding x and y for each colour
+    fin = fopen("Pixmap.bin", "rb"); //opening files
+    FILE *fout;
+    fout = fopen("Traces.txt", "w"); //this one in write mode
+    if(fin==NULL) perror("erreur ouverture \n"); //error management
+    if(fout==NULL) perror("erreur ouverture \n");
+
+
+
     return 0;
 }
