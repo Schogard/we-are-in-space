@@ -12,24 +12,31 @@ int main()
     fin = fopen("Pixmap.bin", "rb");//opening the file in byte mode
     if(fin==NULL) perror("erreur ouverture \n"); //error management
 
-    int n=0; //total number of pixels
-    int histo[257]={0}; //todo, make the histogram a tableau dynamique
-    //making the histogram
-    //todo, read prof, larg, haut like on slide 27, the file pointer should move by itself
-    //make the pixmap in a tableau dynamique
-    while(!feof(fin))
+    //read prof, larg, haut like on slide 27, the file pointer should move by itself
+    unsigned short height=343, length=370;
+
+    //make the Pixmap in a tableau dynamique
+    unsigned char *Pixmap;
+    Pixmap=calloc(height*length, sizeof(unsigned char));
+    size_t read=fread(Pixmap, sizeof(unsigned char), height*length, fin);
+
+    //construct the histogram
+    int *histo;
+    histo=calloc(256, sizeof(int)); //declare the histogram, use of calloc instead of malloc to initiallise all to 0
+    int i;
+    for(i=0; i<height*length; i++)
     {
-        unsigned char b[1];
-        size_t r=fread(b, sizeof b[0], 1, fin); //todo: treat read errors
-        histo[b[0]]++;
-        n++;
+        histo[Pixmap[i]]++;
     }
+
+
     fclose(fin); //closing file
 
 
     //determine colours, control points
-    unsigned char colours[256]={0}, colour_control_points;
+    unsigned char *colours, colour_control_points;
     int j=0;
+    colours=calloc(256, sizeof(unsigned char));
     //to do: test so j doesnt overflow colours[]
     for(int i=0; i<256; i++)
     {
@@ -50,7 +57,7 @@ int main()
 
     //sort colours to find the 5 largest ones
     //here j will be the total number of traces
-    int i, k;
+    int k;
     for(i=0; i<j; i++)
        for(k=i; k<j; k++)
     {
@@ -75,10 +82,28 @@ int main()
     fout = fopen("Traces.txt", "w"); //this one in write mode
     if(fin==NULL) perror("erreur ouverture \n"); //error management
     if(fout==NULL) perror("erreur ouverture \n");
+    for(k=0; k<4; k++)//the first 4 colours
+    {
+        if(colours[k]!=0)
+        {
+            fprintf(fout, "%d \n", colours[k]);
+            for(i=0; i<height*length; i++)
+            {
+                unsigned short x, y; //the coords to compute
+                x=i%length-1;
+                y=i/length; //ask Dragos for maths
+                if(Pixmap[i]==colours[k]) fprintf(fout, "%d %d \n", x, y);
+            }
+        }
+    }
+
 
 
     //construct the Idx
     //in the Idx we will return the colour codes of all traces [50-300], borders [300-...] and the control points (only 4)
     //we will assume that the greatest number of pixels will be the background (white or otherwise), the second largest number of pixels should be the borders
+    free(colours);
+    free(histo);
+    free(Pixmap);
     return 0;
 }
