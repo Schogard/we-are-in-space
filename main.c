@@ -2,9 +2,11 @@
 #include <stdlib.h>
 /**
 Name
-descr
+Extract.exe that is required to build the histogram, save the pixels in a dynamic array and construct the Idx and Traces.txt
 
 Revisions
+29/09/2024 changed everything to use pointers and the program now constructs a primitive, not MatLab compatible Traces.txt(Dragos)
+30/09/2024 the program now reads the height and length of the image (Manuel)
 */
 int main()
 {
@@ -13,18 +15,28 @@ int main()
     if(fin==NULL) perror("erreur ouverture \n"); //error management
 
     //read prof, larg, haut like on slide 27, the file pointer should move by itself
-    unsigned short height=343, length=370;
+    //read the first 3 bytes, size of the image, width in pixels, height in pixels
+    unsigned short *proflarghaut; //profondeur largeur hauteur
+    proflarghaut = malloc(3*sizeof(unsigned short)); // what about big files
+    size_t errf3b=fread(proflarghaut, sizeof(unsigned short), 3, fin); //read proflarghaut
+
+    unsigned short profondeur = proflarghaut[0]; //assign the red values to variables
+    unsigned short largeur = proflarghaut[1];
+    unsigned short hauteur = proflarghaut[2];
+
+    //print size, width and hight of the binfile
+    printf("Profondeur= %d \nLargeur= %d \nHauteur= %d \n", profondeur, largeur, hauteur);
 
     //make the Pixmap in a tableau dynamique
     unsigned char *Pixmap;
-    Pixmap=calloc(height*length, sizeof(unsigned char));
-    size_t read=fread(Pixmap, sizeof(unsigned char), height*length, fin);
+    Pixmap=calloc(hauteur*largeur, sizeof(unsigned char));
+    size_t read=fread(Pixmap, sizeof(unsigned char), hauteur*largeur, fin);
 
     //construct the histogram
     int *histo;
     histo=calloc(256, sizeof(int)); //declare the histogram, use of calloc instead of malloc to initiallise all to 0
     int i;
-    for(i=0; i<height*length; i++)
+    for(i=0; i<hauteur*largeur; i++)
     {
         histo[Pixmap[i]]++;
     }
@@ -87,11 +99,11 @@ int main()
         if(colours[k]!=0)
         {
             fprintf(fout, "%d \n", colours[k]);
-            for(i=0; i<height*length; i++)
+            for(i=0; i<hauteur*largeur; i++)
             {
                 unsigned short x, y; //the coords to compute
-                x=i%length-1;
-                y=i/length; //ask Dragos for maths
+                x=i%largeur-1;
+                y=i/largeur; //ask Dragos for maths
                 if(Pixmap[i]==colours[k]) fprintf(fout, "%d %d \n", x, y);
             }
         }
