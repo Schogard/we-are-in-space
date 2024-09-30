@@ -2,17 +2,21 @@
 #include <stdlib.h>
 /**
 Name
-Extract.exe - the program that is required to build the histogram, save the pixels in a dynamic array and construct the Idx and Traces.txt
+Extract.exe - the program that is required to build the histogram, save the pixels in a dynamic array and construct the Idx and Traces.txt.
+The program takes as arguments the paths to the Pixmap.bin and tot he Traces.txt files, as strings.
 
 Revisions
 29/09/2024 changed everything to use pointers and the program now constructs a primitive, not MatLab compatible Traces.txt(Dragos)
-30/09/2024 the program now reads the height and length of the image (Manuel)
+30/09/2024 the program now reads the height and length of the image (Manuel), the program now takes as arguments the paths to the Pixmap.bin and Traces.txt (Dragos)
 */
-int main()
+int main(int argc, const char * argv[])
 {
     FILE *fin;
-    fin = fopen("Pixmap.bin", "rb");//opening the file in byte mode
-    //todo, make the program take any file path to the bin file, with argv and argc
+    if(argc>3) perror("trop d'arguments");
+    if(argc<3) perror("pas assez d'arguments");
+
+    fin = fopen(argv[1], "rb");//opening the file in byte mode, opens the path to Pixmap.bin
+
     if(fin==NULL) perror("erreur ouverture \n"); //error management
 
     //read prof, larg, haut like on slide 27, the file pointer should move by itself
@@ -21,7 +25,7 @@ int main()
     proflarghaut = malloc(3*sizeof(unsigned short)); // what about big files
     size_t errf3b=fread(proflarghaut, sizeof(unsigned short), 3, fin); //read proflarghaut
 
-    unsigned short profondeur = proflarghaut[0]; //assign the red values to variables
+    unsigned short profondeur = proflarghaut[0]; //assign the read values to variables
     unsigned short largeur = proflarghaut[1];
     unsigned short hauteur = proflarghaut[2];
 
@@ -46,11 +50,11 @@ int main()
     fclose(fin); //closing file
 
 
-    //determine colours, control points
+    //determine colours of the traces and of the control points
     unsigned char *colours, colour_control_points;
     int j=0;
     colours=calloc(256, sizeof(unsigned char));
-    //to do: test so j doesnt overflow colours[]
+    //after this code runs, in the variable j there will be stored the number of traces found
     for(int i=0; i<256; i++)
     {
         if(50<=histo[i] && histo[i]<=300) //traces
@@ -90,9 +94,8 @@ int main()
 
 
     //finding x and y for each colour
-    fin = fopen("Pixmap.bin", "rb"); //opening files
     FILE *fout;
-    fout = fopen("Traces.txt", "w"); //this one in write mode
+    fout = fopen(argv[2], "w"); //this one in write mode, will open the path to Traces.txt
     if(fin==NULL) perror("erreur ouverture \n"); //error management
     if(fout==NULL) perror("erreur ouverture \n");
     for(k=0; k<4; k++)//the first 4 colours
