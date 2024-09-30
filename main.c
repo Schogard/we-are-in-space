@@ -36,7 +36,7 @@ int main(int argc, const char * argv[])
     unsigned char *Pixmap;
     Pixmap=calloc(hauteur*largeur, sizeof(unsigned char));
     size_t read=fread(Pixmap, sizeof(unsigned char), hauteur*largeur, fin);
-
+    if(read!=hauteur*largeur) perror("bad number of pixels"); //error if the number of pixels read doesnt correspond to the h*l
     //construct the histogram
     int *histo;
     histo=calloc(256, sizeof(int)); //declare the histogram, use of calloc instead of malloc to initiallise all to 0
