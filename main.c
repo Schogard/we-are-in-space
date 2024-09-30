@@ -2,7 +2,7 @@
 #include <stdlib.h>
 /**
 Name
-Extract.exe that is required to build the histogram, save the pixels in a dynamic array and construct the Idx and Traces.txt
+Extract.exe - the program that is required to build the histogram, save the pixels in a dynamic array and construct the Idx and Traces.txt
 
 Revisions
 29/09/2024 changed everything to use pointers and the program now constructs a primitive, not MatLab compatible Traces.txt(Dragos)
@@ -12,6 +12,7 @@ int main()
 {
     FILE *fin;
     fin = fopen("Pixmap.bin", "rb");//opening the file in byte mode
+    //todo, make the program take any file path to the bin file, with argv and argc
     if(fin==NULL) perror("erreur ouverture \n"); //error management
 
     //read prof, larg, haut like on slide 27, the file pointer should move by itself
@@ -104,14 +105,14 @@ int main()
                 unsigned short x, y; //the coords to compute
                 x=i%largeur-1;
                 y=i/largeur; //ask Dragos for maths
-                if(Pixmap[i]==colours[k]) fprintf(fout, "%d %d \n", x, y);
+                if(Pixmap[i]==colours[k]) fprintf(fout, "%d %d \n", x, y); //this makes the primitive Traces.txt, todo make it matlab compatible
             }
         }
     }
 
 
 
-    //construct the Idx
+    //todo construct the Idx
     //in the Idx we will return the colour codes of all traces [50-300], borders [300-...] and the control points (only 4)
     //we will assume that the greatest number of pixels will be the background (white or otherwise), the second largest number of pixels should be the borders
     free(colours);
