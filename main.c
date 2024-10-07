@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#pragma warning(disable : 4996)
 /**
 Name
 Extract.exe - the program that is required to build the histogram, save the pixels in a dynamic array and construct the Idx and Traces.txt.
@@ -8,7 +9,7 @@ The program takes as arguments the paths to the Pixmap.bin and tot he Traces.txt
 Revisions
 29/09/2024 changed everything to use pointers and the program now constructs a primitive, not MatLab compatible Traces.txt(Dragos)
 30/09/2024 the program now reads the height and length of the image (Manuel), the program now takes as arguments the paths to the Pixmap.bin and Traces.txt (Dragos)
-07/10/2024 The Idx should in theory work (Theo)
+07/10/2024 The Idx should in theory work (Theo), and added the pragma (idk if it messes with you guys)
 */
 int main(int argc, const char * argv[])
 {
