@@ -3,23 +3,45 @@
 #pragma warning(disable : 4996)
 /**
 Name
-Extract.exe - the program that is required to build the histogram, save the pixels in a dynamic array and construct the Idx and Traces.txt.
-The program takes as arguments the paths to the Pixmap.bin and tot he Traces.txt files, as strings.
+Extract.exe - the program that is required to build the histogram, save the pixels in a dynamic array and constructs the Idx and writes in the target file the points of the traces and the control points.
+The program takes as arguments the paths to the Pixmap.bin and to the Traces.txt files, as strings.
+The program returns the Idx string of the colour of the traces and the control points and writes in the target file the points of the traces and the control points.
 
 Revisions
 29/09/2024 changed everything to use pointers and the program now constructs a primitive, not MatLab compatible Traces.txt(Dragos)
 30/09/2024 the program now reads the height and length of the image (Manuel), the program now takes as arguments the paths to the Pixmap.bin and Traces.txt (Dragos)
 07/10/2024 The Idx should in theory work (Theo), and added the pragma (idk if it messes with you guys)
+Added the following error codes (based on slide 52 in the project presentation):
+pas assez de pixels returns -1
+profondeur pas 8 returns -2
+erreur ouverture fichier d'entree returns -3
+largeur/hauteur en dehors de bornes returns -4
+pas le bon nombre de parametres returns -5
+erreur ouverture fichier de sortie returns -6
+pas de traces returns -7
+pas de corners returns -8
+The program continues if trop de pixels or plus de 5 traces.
+
+Fixed bug that only the first 4 colours were printed (Dragos)
+Tested all the examples on moodle, all of them work with no bugs. (Dragos)
+
 */
 int main(int argc, const char * argv[])
 {
     FILE *fin;
-    if(argc>3) perror("trop d'arguments");
-    if(argc<3) perror("pas assez d'arguments");
-
+    if(argc!=3)
+    {
+        perror("pas le bon nombre de parametres"); //error management if the number of arguments isnt good
+        return -5;
+    }
     fin = fopen(argv[1], "rb");//opening the file in byte mode, opens the path to Pixmap.bin
 
-    if(fin==NULL) perror("erreur ouverture \n"); //error management
+    if(fin==NULL)
+    {
+        perror("erreur ouverture \n"); //error management if failed to open the file
+        return -3;
+    }
+
 
     //read prof, larg, haut like on slide 27, the file pointer should move by itself
     //read the first 3 bytes, size of the image, width in pixels, height in pixels
@@ -32,18 +54,31 @@ int main(int argc, const char * argv[])
     unsigned short hauteur = proflarghaut[2];
 
     //print size, width and hight of the binfile
-    printf("Profondeur= %d \nLargeur= %d \nHauteur= %d \n", profondeur, largeur, hauteur);
-
+    //printf("Profondeur= %d \nLargeur= %d \nHauteur= %d \n", profondeur, largeur, hauteur);
+    if(profondeur!=8)
+    {
+        perror("profondeur pas 8"); //error management if the depth isnt 8
+        return -2;
+    }
+    if(hauteur<=100 || 1000<=hauteur || largeur<=100 || 1000<=largeur)
+    {
+        perror("largeur/hauteur en dehors de bornes"); //error management if the size of the image is outside the limits
+        return -4;
+    }
     //make the Pixmap in a tableau dynamique
     unsigned char *Pixmap;
     Pixmap=calloc(hauteur*largeur, sizeof(unsigned char));
     size_t read=fread(Pixmap, sizeof(unsigned char), hauteur*largeur, fin);
-    if(read!=hauteur*largeur) perror("bad number of pixels"); //error if the number of pixels read doesnt correspond to the h*l
+    if(read<hauteur*largeur)
+    {
+        perror("pas assez de pixels"); //error if the number of pixels read doesnt correspond to the h*l
+        return -1;
+    }
     //construct the histogram
     int *histo;
     histo=calloc(256, sizeof(int)); //declare the histogram, use of calloc instead of malloc to initiallise all to 0
     int i;
-    for(i=0; i<hauteur*largeur; i++)
+    for(i=0; i<hauteur*largeur; i++) //build the histogram
     {
         histo[Pixmap[i]]++;
     }
@@ -54,7 +89,8 @@ int main(int argc, const char * argv[])
 
     //determine colours of the traces and of the control points
     unsigned char *colours, colour_control_points;
-    int j=0;
+    int found_corner=0; //will turn to 1 if we find a corner, used for error management
+    int j=0; //start at the first element in colours
     colours=calloc(256, sizeof(unsigned char));
     //after this code runs, in the variable j there will be stored the number of traces found
     for(int i=0; i<256; i++)
@@ -62,22 +98,40 @@ int main(int argc, const char * argv[])
         if(50<=histo[i] && histo[i]<=300) //traces
         {
             colours[j]=i;
-            j++;
+            j++; //move the current position in the stack (colours)
         }
-        if(histo[i]==4) colour_control_points=i; //control points
-    }
+        if(histo[i]==4)
+        {
+             colour_control_points=i; //control points
+             found_corner=1; //we found the control points
+        }
 
+    }
+    if(found_corner==0) //we didnt find any control points, so error
+    {
+        perror("pas de corners");
+        return -8;
+    }
+    /*
+    debug: print the histogram
     for(int i=0; i<256; i++)
     {
         if(histo[i]!=0) printf("%d %d \n", i, histo[i]);
     }
-
+    */
 
 
     //sort colours to find the 5 largest ones
-    //here j will be the total number of traces
+    //here j has become the total number of traces
+
+    if(j==0) //check if there are no traces
+    {
+        perror("pas de traces");
+        return -7;
+    }
+
     int k;
-    for(i=0; i<j; i++)
+    for(i=0; i<j; i++) //bubble sort the colours
        for(k=i; k<j; k++)
     {
         if(histo[colours[i]]<histo[colours[k]]) //sort them in function of the histogram
@@ -88,19 +142,26 @@ int main(int argc, const char * argv[])
             colours[k]=aux;
         }
     }
+
+    /*
+    debug: print the colours and the number of pixels
     for(i=0; i<j; i++)
     {
         printf("%d %d \n", colours[i], histo[colours[i]]);
     }
+    */
+
     //at this point we have a vector of colours in decreasing order of number of pixels and the colour of the control points
-
-
     //finding x and y for each colour
     FILE *fout;
     fout = fopen(argv[2], "w"); //this one in write mode, will open the path to Traces.txt
-    if(fin==NULL) perror("erreur ouverture \n"); //error management
-    if(fout==NULL) perror("erreur ouverture \n");
-    for(k=0; k<4; k++)//the first 4 colours
+    if(fout==NULL)
+    {
+        perror("erreur ouverture fichier de sortie");
+        return -6;
+    }
+
+    for(k=0; k<5; k++)//the first 5 colours
     {
         if(colours[k]!=0)
         {
@@ -109,7 +170,7 @@ int main(int argc, const char * argv[])
             {
                 unsigned short x, y; //the coords to compute
                 x=i%largeur-1;
-                y=i/largeur; //ask Dragos for maths
+                y=i/largeur; //maths in the documentation
                 if(Pixmap[i]==colours[k]) fprintf(fout, "%d %d \n", x, y); //this makes the primitive Traces.txt, todo make it matlab compatible
             }
         }
@@ -118,7 +179,7 @@ int main(int argc, const char * argv[])
     // Constructing the Idx (colours[i]: traces, colour_control_points: control points, 2nd largest # pixels: borders)
 
     fprintf(stdout, "C: %d\nT: ", colour_control_points); //maybe add border as well?
-    for (i = 0; i < 4; i++)
+    for (i = 0; i < 5; i++)
     {
         if (colours[i] != 0)
         {
