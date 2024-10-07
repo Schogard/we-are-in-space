@@ -8,6 +8,7 @@ The program takes as arguments the paths to the Pixmap.bin and tot he Traces.txt
 Revisions
 29/09/2024 changed everything to use pointers and the program now constructs a primitive, not MatLab compatible Traces.txt(Dragos)
 30/09/2024 the program now reads the height and length of the image (Manuel), the program now takes as arguments the paths to the Pixmap.bin and Traces.txt (Dragos)
+07/10/2024 The Idx should in theory work (Theo)
 */
 int main(int argc, const char * argv[])
 {
@@ -113,7 +114,16 @@ int main(int argc, const char * argv[])
         }
     }
 
+    // Constructing the Idx (colours[i]: traces, colour_control_points: control points, 2nd largest # pixels: borders)
 
+    fprintf(stdout, "C: %d\nT: ", colour_control_points); //maybe add border as well?
+    for (i = 0; i < 4; i++)
+    {
+        if (colours[i] != 0)
+        {
+            fprintf(stdout, "%d ", colours[i]);
+        }
+    }
 
     //todo construct the Idx
     //in the Idx we will return the colour codes of all traces [50-300], borders [300-...] and the control points (only 4)
