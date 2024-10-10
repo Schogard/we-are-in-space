@@ -1,8 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #pragma warning(disable : 4996)
-/**
-Name
+/** Team: Dragos, Manuel, Theo
 Extract.exe - the program that is required to build the histogram, save the pixels in a dynamic array and constructs the Idx and writes in the target file the points of the traces and the control points.
 The program takes as arguments the paths to the Pixmap.bin and to the Traces.txt files, as strings.
 The program returns the Idx string of the colour of the traces and the control points and writes in the target file the points of the traces and the control points.
@@ -26,6 +25,14 @@ Fixed bug that only the first 4 colours were printed (Dragos)
 Tested all the examples on moodle, all of them work with no bugs. (Dragos)
 
 */
+
+//this function takes the position in the pixmap vector and the largeur of the image, and outputs the corresponding x and y coordinates
+//counted from the top right corner (0, 0)
+void calc_coords(int i, unsigned short largeur, unsigned short *x, unsigned short *y)
+{
+    *x=i%largeur;
+    *y=i/largeur; //maths in the documentation
+}
 int main(int argc, const char * argv[])
 {
     FILE *fin;
@@ -53,8 +60,9 @@ int main(int argc, const char * argv[])
     unsigned short largeur = proflarghaut[1];
     unsigned short hauteur = proflarghaut[2];
 
-    //print size, width and hight of the binfile
-    //printf("Profondeur= %d \nLargeur= %d \nHauteur= %d \n", profondeur, largeur, hauteur);
+    /*debug: print size, width and hight of the binfile
+        printf("Profondeur= %d \nLargeur= %d \nHauteur= %d \n", profondeur, largeur, hauteur);
+    */
     if(profondeur!=8)
     {
         perror("profondeur pas 8"); //error management if the depth isnt 8
@@ -65,13 +73,14 @@ int main(int argc, const char * argv[])
         perror("largeur/hauteur en dehors de bornes"); //error management if the size of the image is outside the limits
         return -4;
     }
+    int size=hauteur*largeur;
     //make the Pixmap in a tableau dynamique
     unsigned char *Pixmap;
-    Pixmap=calloc(hauteur*largeur, sizeof(unsigned char));
-    size_t read=fread(Pixmap, sizeof(unsigned char), hauteur*largeur, fin);
-    if(read<hauteur*largeur)
+    Pixmap=calloc(size, sizeof(unsigned char));
+    size_t read=fread(Pixmap, sizeof(unsigned char), size, fin);
+    if(read<size)
     {
-        perror("pas assez de pixels"); //error if the number of pixels read doesnt correspond to the h*l
+        perror("pas assez de pixels"); //error if the number of pixels read is less than the size
         return -1;
     }
     //construct the histogram
@@ -84,7 +93,7 @@ int main(int argc, const char * argv[])
     }
 
 
-    fclose(fin); //closing file
+    fclose(fin); //closing pixmap file
 
 
     //determine colours of the traces and of the control points
@@ -92,7 +101,7 @@ int main(int argc, const char * argv[])
     int found_corner=0; //will turn to 1 if we find a corner, used for error management
     int j=0; //start at the first element in colours
     colours=calloc(256, sizeof(unsigned char));
-    //after this code runs, in the variable j there will be stored the number of traces found
+    //after this code runs, in the variable j will store the number of traces found
     for(int i=0; i<256; i++)
     {
         if(50<=histo[i] && histo[i]<=300) //traces
@@ -169,8 +178,7 @@ int main(int argc, const char * argv[])
             for(i=0; i<hauteur*largeur; i++)
             {
                 unsigned short x, y; //the coords to compute
-                x=i%largeur-1;
-                y=i/largeur; //maths in the documentation
+                calc_coords(i, largeur, &x, &y);
                 if(Pixmap[i]==colours[k]) fprintf(fout, "%d %d \n", x, y); //this makes the primitive Traces.txt, todo make it matlab compatible
             }
         }
