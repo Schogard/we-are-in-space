@@ -169,18 +169,37 @@ int main(int argc, const char * argv[])
         perror("erreur ouverture fichier de sortie");
         return -6;
     }
+    //treating the colour of the control points
+    if(histo[colour_control_points]==4)
+    {
+        fprintf(fout, "Corners= [\n"); //formating
+
+        for(i=0; i<hauteur*largeur; i++) //generating the coordinates for controlpoints
+        {
+            unsigned short controlpointx, controlpointy;
+            calc_coords(i, largeur, &controlpointx, &controlpointy);
+            if(Pixmap[i]==colour_control_points)
+            {
+                fprintf(fout, "%d, %d;\n", controlpointx, controlpointy); //generate controlpoints in traces.txt
+            }
+        }
+
+        fprintf(fout, "];\n\n");
+    }
 
     for(k=0; k<5; k++)//the first 5 colours
     {
         if(colours[k]!=0)
         {
-            fprintf(fout, "%d \n", colours[k]);
+            fprintf(fout, "C%d= [\n", k);
             for(i=0; i<hauteur*largeur; i++)
             {
                 unsigned short x, y; //the coords to compute
                 calc_coords(i, largeur, &x, &y);
-                if(Pixmap[i]==colours[k]) fprintf(fout, "%d %d \n", x, y); //this makes the primitive Traces.txt, todo make it matlab compatible
+                if(Pixmap[i]==colours[k]) fprintf(fout, "%d, %d;\n", x, y); //this makes the primitive Traces.txt, todo make it matlab compatible
+
             }
+            fprintf(fout, "]; \n\n");
         }
     }
 
