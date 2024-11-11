@@ -506,6 +506,11 @@ plot(X, Y, 'ob');
 hold on;
 opts = fitoptions('Method','NonlinearLeastSquares');
 ft=fittype('a*sin(b*x+c)+d');
-opts.StartPoint=[]
+[sortY, index]=sort(Y, 'descend');
+Y1=sortY(1);
+Y2=sortY(end);
+freq=+X(index(end))-X(index(1))
+opts.StartPoint=[abs((Y2-Y1)/2), 1/abs(freq), Y(1), mean(Y)]
 [fitResult, gof, output] = fit(X, Y, ft, opts );
 plot(fitResult);
+hold off;
