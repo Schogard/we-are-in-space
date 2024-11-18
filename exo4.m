@@ -475,7 +475,10 @@ sols=roots(polyn)
 Xmax=max(X);
 
 sols=sols(find(0<sols & sols<Xmax & conj(sols)==sols)) %check if solutions are in domain and real
-dist=sols(end)-sols(end-1)
+if length(sols)<3
+    dist=sols(end)-sols(end-1)
+else dist=sols(end-1)-sols(end-2)
+end
 
 
 hold on;
