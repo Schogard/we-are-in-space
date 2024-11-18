@@ -1,0 +1,117 @@
+%% Main function
+function Main(filename, Curve, Corners)
+    % get X and Y coordinates
+    X = Curve(:,1); 
+    Y = Curve(:,2);
+    
+    % get Height and Width
+    Width=max(Corners(:, 1))
+    Height=max(Corners(:, 2))
+
+    % 1. Step: Order Corners
+    [A,B,C,D] = orderCorners(Corners);
+
+    % 2. Step: Calculate Matrix
+    M = computeM(A, B, C, D, Width, Height);
+
+    % 3. Step: Apply M
+    [x y] = applyM(M, X, Y);
+
+    % 4. Step: Fit sine
+    [ParamStr yfitted] = FindTrace(x, y, Width, Height);
+
+end
+
+
+% function to apply M to "untangle" the coordinates to homogenuous coordinates
+function [x y] = applyM(M, X, Y) 
+    point = [X Y]     
+    point(:, end+1)=1       % homogenuous coordinates
+    newpoint= M*point.';
+    point_transformed=newpoint.';
+    x=point_transformed(:, 1)./point_transformed(:, 3)
+    y=point_transformed(:, 2)./point_transformed(:, 3)
+end
+
+
+
+% function to compute matrix M
+function M = computeM(A,B,C, D, Width, Height)
+    %corner A goes to 0 0
+    %corner B goes to W 0
+    %corner C goes to W H
+    %corner D goes to 0 H
+    matrix=[A(1), A(2), 1, 0, 0, 0, -A(1)*0, -A(2)*0;
+            0, 0, 0, A(1), A(2), 1, -A(1)*0, -A(2)*0;
+            B(1), B(2), 1, 0, 0, 0, -B(1)*Width, -B(2)*Width;
+            0, 0, 0, B(1), B(2), 1, -B(1)*0, -B(2)*0;
+            C(1), C(2), 1, 0, 0, 0, -C(1)*Width, -C(2)*Width;
+            0, 0, 0, C(1), C(2), 1, -C(1)*Height, -C(2)*Height;
+            D(1), D(2), 1, 0, 0, 0, -D(1)*0, -D(2)*0;
+            0, 0, 0, D(1), D(2), 1, -D(1)*Height, -D(2)*Height;]
+    b=[0; 0; Width; 0; Width; Height; 0; Height]
+    
+    % Matrix division Ax=b => x = A\b
+    x=matrix\b 
+    M=[x(1), x(2), x(3);
+        x(4), x(5), x(6);
+        x(7), x(8), 1
+        ] 
+end
+
+
+
+function  [ParamStr, yfitted] = FindTrace(X, Y, Width, Height)
+    [Xsort, index]=sort(X)
+    Ysort=Y(index)
+    polyn = polyfit(Xsort,Ysort,12);  %to find frequency, approximate as a 12deg polyn
+    plot(Xsort,polyval(polyn,Xsort));
+    
+    %find the points where the polyn is mean(Y)
+    polyn(end)=polyn(end)-mean(Y)
+    sols=roots(polyn)
+    Xmax=max(X);
+    sols=sols(find(0<sols & sols<Xmax))
+    dist=sols(end)-sols(end-1)
+    
+    
+    hold on;
+    opts = fitoptions('Method','NonlinearLeastSquares');
+    ft=fittype('a*sin(b*x+c)+d');
+    [sortY, index]=sort(Y, 'descend');
+    freq=dist
+    opts.StartPoint=[abs((max(Y)-min(Y))/2), pi/abs(freq), Y(1), mean(Y)]
+    [fitResult, gof, output] = fit(X, Y, ft, opts );
+    plot(fitResult);
+    hold off;
+end
+
+
+%function to order corners
+function [A,B,C,D] = orderCorners(Corners)
+    %must find corner A by sorting the Corners over the smallest distance to
+    
+    %0,0, that is to say smallest x2+y2
+    distances=Corners(:,1).^2 + Corners(:,2).^2
+    [distances, index_distances]=sort(distances)
+    xA=Corners(index_distances(1), 1);
+    yA=Corners(index_distances(1), 2);
+    A=[xA, yA];
+
+    %put A at the beginning of Corners
+    aux=[Corners(1, 1), Corners(1, 2)]
+    Corners(index_distances(1), :)=aux
+    Corners(1, :)=A
+    
+    %now we must order the B C D such that atan((y-yA)/(x-xA)) is minimal
+    angles=atan2((Corners(:, 2)-yA), (Corners(:, 1)-xA))
+    [angles, index_angles]=sort(angles)
+    angles(1, :)=[] %delete A
+    index_angles(1, :)=[]
+    
+    %now the last 3 angles correspond to B C and D
+    B=[Corners(index_angles(1), 1), Corners(index_angles(1), 2)];
+    C=[Corners(index_angles(2), 1), Corners(index_angles(2), 2)];
+    D=[Corners(index_angles(3), 1), Corners(index_angles(3), 2)];
+end
+   
