@@ -641,7 +641,7 @@ T ={C0 C1 C2 C3 };
     % get width and height of image
     Width=max(Corners(:, 1))
     Height=max(Corners(:, 2))
-    leg=[] %legend to construct
+    legstring=[] %legend to construct
     f=figure, %figure to draw
     % 1. Step: Order Corners
     [A,B,C,D] = orderCorners(Corners);
@@ -670,12 +670,13 @@ T ={C0 C1 C2 C3 };
         ysort=yfitted(index)
         plot(xsort, ysort);
         %construct the legend
-        leg=[leg ParamStr]
+        legstring=[legstring ParamStr]
         hold on;
     end
     %output the legend
-    lgd=legend(leg)
+    lgd=legend(legstring)
     lgd.AutoUpdate ="off";
+    lgd.Location='southoutside'
     %6. Step plot original data
     for i = 1:length(T) %for all traces
         Curves=cell2mat(T(i));
@@ -697,8 +698,15 @@ T ={C0 C1 C2 C3 };
     t=datestr(datetime)
     titre=strcat("SRC : ‘", name, ext, "’ @ ", t)
     title(titre)
-    %add grid lines
+    %add grid lines and axis labels
     grid on;
+    xticks(0:0.1:1)
+    yticks([-1:0.2:1])
+    axis([0 1 -1 1])
+    yline(0);
+    xline(0.5);
+    xlabel("0.1[s]/div")
+    ylabel("0.2[v]/div")
     %7. Step pdf file
     pdffilename=strcat(name, ".pdf")
     saveas(f, pdffilename)
