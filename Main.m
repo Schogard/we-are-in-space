@@ -642,7 +642,7 @@ T ={C0 C1 C2 C3 };
     Width=max(Corners(:, 1))
     Height=max(Corners(:, 2))
     legstring=[] %legend to construct
-    f=figure, %figure to draw
+    f=figure('Position', [100, 100, 500, 500]); %sets size of figure to draw
     % 1. Step: Order Corners
     [A,B,C,D] = orderCorners(Corners);
 
@@ -674,9 +674,11 @@ T ={C0 C1 C2 C3 };
         hold on;
     end
     %output the legend
+    set(gca, 'Position', [0.2, 0.3, 0.6, 0.6]); %Change size of plot to allow space for legend
     lgd=legend(legstring)
     lgd.AutoUpdate ="off";
     lgd.Location='southoutside'
+    lgd.Position=[0.5, 0.1, 0.01, 0.01]; %Places lgd properly[x,y, width, height]
     %6. Step plot original data
     for i = 1:length(T) %for all traces
         Curves=cell2mat(T(i));
