@@ -702,7 +702,7 @@ T ={C0 C1 C2 C3 };
     grid on;
     xticks(0:0.1:1)
     yticks([-1:0.2:1])
-    axis([0 1 -1 1])
+    axis square
     yline(0);
     xline(0.5);
     xlabel("0.1[s]/div")
