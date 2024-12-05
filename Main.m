@@ -642,14 +642,14 @@ T ={C0 C1 C2 C3 };
     Width=max(Corners(:, 1))
     Height=max(Corners(:, 2))
     legstring=[] %legend to construct
-    f=figure('Position', [100, 100, 500, 500]); %sets size of figure to draw
+    f=figure, %figure to draw
     % 1. Step: Order Corners
     [A,B,C,D] = orderCorners(Corners);
 
     % 2. Step: Calculate Matrix
     M = computeM(A, B, C, D, Width, Height);
 
-    for i = 1:length(T) %for all traces
+    for i = 1:length(T) %for all traces, to calculate the fit and to plot the fit
         Curves=cell2mat(T(i));
         X = Curves(:,1);
         Y = Curves(:,2);
@@ -666,6 +666,7 @@ T ={C0 C1 C2 C3 };
         %resize the original data so it fits on the graph (W=1s, H=2v)
         xresized=x./Width
         yresized=y./(0.5*Height)-1
+        %plot the fitted data
         [xsort, index]=sort(xresized)
         ysort=yfitted(index)
         plot(xsort, ysort);
@@ -674,11 +675,9 @@ T ={C0 C1 C2 C3 };
         hold on;
     end
     %output the legend
-    set(gca, 'Position', [0.2, 0.3, 0.6, 0.6]); %Change size of plot to allow space for legend
     lgd=legend(legstring)
     lgd.AutoUpdate ="off";
     lgd.Location='southoutside'
-    lgd.Position=[0.5, 0.1, 0.01, 0.01]; %Places lgd properly[x,y, width, height]
     %6. Step plot original data
     for i = 1:length(T) %for all traces
         Curves=cell2mat(T(i));
@@ -704,7 +703,7 @@ T ={C0 C1 C2 C3 };
     grid on;
     xticks(0:0.1:1)
     yticks([-1:0.2:1])
-    axis square
+    axis([0 1 -1 1])
     yline(0);
     xline(0.5);
     xlabel("0.1[s]/div")
