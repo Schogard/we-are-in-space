@@ -631,8 +631,9 @@ C3= [
 
 T ={C0 C1 C2 C3 };
 
-
-
+filename="image.png" %PLACEHOLDER, TO REMOVE IN THE FINAL VARIANT, will come from labview
+colours=[]
+optionmarker='o'
 
 
 
@@ -688,13 +689,12 @@ T ={C0 C1 C2 C3 };
         xresized=x./Width
         yresized=y./(0.5*Height)-1
         %plot original data points
-        plot(xresized, yresized, 'o');
+        plot(xresized, yresized, optionmarker);
         hold on;
     end
     hold off;
 
     %add title
-    filename="image.png" %PLACEHOLDER, TO REMOVE IN THE FINAL VARIANT, will come from labview
     [filepath,name,ext] = fileparts(filename)
     t=datestr(datetime)
     titre=strcat("SRC : ‘", name, ext, "’ @ ", t)
@@ -764,9 +764,9 @@ function  [ParamStr, yfitted] = FindTrace(X, Y, Width, Height)
     %to find frequency, approximate as a 12deg polyn
     [Xsort, index]=sort(X)
     Ysort=Y(index)
-    polyn = polyfit(Xsort,Ysort,20);
+    polyn = polyfit(Xsort,Ysort,12);
     %find the points where the polyn is mean(Y)
-    polyn(end)=polyn(end)-mean(Y)
+    polyn(end)=polyn(end)-mean(Y) %to solve polym=mean(Y)
     sols=roots(polyn)
     Xmax=max(X);
     sols=sols(find(0<sols & sols<Xmax & conj(sols)==sols)) %check if solutions are in domain and real
