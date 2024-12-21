@@ -203,6 +203,18 @@ int main(int argc, const char * argv[])
         }
     }
 
+
+    //generate  end of traces
+    fprintf(fout, "T={");
+    for(k=0; k<5; k++)//the first 5 colours
+    {
+        if(colours[k]!=0)
+        {
+            fprintf(fout, "C%d ", k);
+
+        }
+    }
+    fprintf(fout, "}; \n\n");
     // Constructing the Idx (colours[i]: traces, colour_control_points: control points, 2nd largest # pixels: borders)
 
     fprintf(stdout, "C: %d\nT: ", colour_control_points); //maybe add border as well?
