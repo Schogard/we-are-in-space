@@ -632,7 +632,7 @@ C3= [
 T ={C0 C1 C2 C3 };
 
 filename="image.png" %PLACEHOLDER, TO REMOVE IN THE FINAL VARIANT, will come from labview
-colours=[]
+colours=[1 0 0; 0 1 0; 0 0 1; 0 0 0] %TEST
 optionmarker='o'
 
 
@@ -670,7 +670,7 @@ optionmarker='o'
         %plot the fitted data
         [xsort, index]=sort(xresized)
         ysort=yfitted(index)
-        plot(xsort, ysort);
+        plot(xsort, ysort, 'color', colours(i,:));
         %construct the legend
         legstring=[legstring ParamStr]
         hold on;
@@ -689,7 +689,7 @@ optionmarker='o'
         xresized=x./Width
         yresized=y./(0.5*Height)-1
         %plot original data points
-        plot(xresized, yresized, optionmarker);
+        plot(xresized, yresized, optionmarker, 'color', colours(i, :));
         hold on;
     end
     hold off;
