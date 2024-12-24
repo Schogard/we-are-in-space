@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #pragma warning(disable : 4996)
-/** Team: Dragos, Manuel, Theo
+/** Team: Manuel Corrado Bruppacher, Dragoș-Andrei Sirghi, Theo Oliver Maechler
 Extract.exe - the program that is required to build the histogram, save the pixels in a dynamic array and constructs the Idx and writes in the target file the points of the traces and the control points.
 The program takes as arguments the paths to the Pixmap.bin and to the Traces.txt files, as strings.
 The program returns the Idx string of the colour of the traces and the control points and writes in the target file the points of the traces and the control points.
