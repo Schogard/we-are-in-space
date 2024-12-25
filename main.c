@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #pragma warning(disable : 4996)
-/** Team: Manuel Corrado Bruppacher, Dragos-Andrei Sirghi, Theo Oliver Maechler
+/** Team: Manuel Corrado Bruppacher, Dragoș-Andrei Sirghi, Theo Oliver Maechler
 Extract.exe - the program that is required to build the histogram, save the pixels in a dynamic array and constructs the Idx and writes in the target file the points of the traces and the control points.
 The program takes as arguments the paths to the Pixmap.bin and to the Traces.txt files, as strings.
 The program returns the Idx string of the colour of the traces and the control points and writes in the target file the points of the traces and the control points.
@@ -28,10 +28,10 @@ Tested all the examples on moodle, all of them work with no bugs. (Dragos)
 
 //this function takes the position in the pixmap vector and the largeur of the image, and outputs the corresponding x and y coordinates
 //counted from the top right corner (0, 0)
-void calc_coords(int i, unsigned short largeur, unsigned short *x, unsigned short *y)
+void calc_coords(int i, unsigned short largeur, unsigned short hauteur, unsigned short *x, unsigned short *y)
 {
     *x=i%largeur;
-    *y=i/largeur; //maths in the documentation
+    *y=hauteur-i/largeur; //maths in the documentation, Y deja inversee
 }
 int main(int argc, const char * argv[])
 {
@@ -177,7 +177,7 @@ int main(int argc, const char * argv[])
         for(i=0; i<hauteur*largeur; i++) //generating the coordinates for controlpoints
         {
             unsigned short controlpointx, controlpointy;
-            calc_coords(i, largeur, &controlpointx, &controlpointy);
+            calc_coords(i, largeur, hauteur, &controlpointx, &controlpointy);
             if(Pixmap[i]==colour_control_points)
             {
                 fprintf(fout, "%d, %d;\n", controlpointx, controlpointy); //generate controlpoints in traces.txt
@@ -195,7 +195,7 @@ int main(int argc, const char * argv[])
             for(i=0; i<hauteur*largeur; i++)
             {
                 unsigned short x, y; //the coords to compute
-                calc_coords(i, largeur, &x, &y);
+                calc_coords(i, largeur, hauteur, &x, &y);
                 if(Pixmap[i]==colours[k]) fprintf(fout, "%d, %d;\n", x, y); //this makes the primitive Traces.txt, todo make it matlab compatible
 
             }
