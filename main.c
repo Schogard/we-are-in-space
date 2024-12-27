@@ -23,6 +23,7 @@ The program continues if trop de pixels or plus de 5 traces.
 
 Fixed bug that only the first 4 colours were printed (Dragos)
 Tested all the examples on moodle, all of them work with no bugs. (Dragos)
+27/12/2024 initialized colours with -1 as 0 can actually be a colour. Now absence of colour is marked by -1
 
 */
 
@@ -97,11 +98,13 @@ int main(int argc, const char * argv[])
 
 
     //determine colours of the traces and of the control points
-    unsigned char *colours, colour_control_points;
+    int *colours, colour_control_points;
     int found_corner=0; //will turn to 1 if we find a corner, used for error management
     int j=0; //start at the first element in colours
-    colours=calloc(256, sizeof(unsigned char));
-    //after this code runs, in the variable j will store the number of traces found
+    colours=calloc(256, sizeof(int)); //traces colour stackm hqs to be int to allow negqtives
+    //initialise with -1, as 0 can be a colour
+    for(int i=0; i<256; i++) colours[i]=-2;
+    //after this code runs, in the variable j will store the number of traces found and in colours there will be the colours of the traces
     for(int i=0; i<256; i++)
     {
         if(50<=histo[i] && histo[i]<=300) //traces
@@ -121,13 +124,13 @@ int main(int argc, const char * argv[])
         perror("pas de corners");
         return -8;
     }
-    /*
-    debug: print the histogram
+/*
+  //  debug: print the histogram
     for(int i=0; i<256; i++)
     {
         if(histo[i]!=0) printf("%d %d \n", i, histo[i]);
     }
-    */
+*/
 
 
     //sort colours to find the 5 largest ones
@@ -152,13 +155,14 @@ int main(int argc, const char * argv[])
         }
     }
 
-    /*
-    debug: print the colours and the number of pixels
+/*
+   // debug: print the colours and the number of pixels
+   printf("%d \n", j);
     for(i=0; i<j; i++)
     {
         printf("%d %d \n", colours[i], histo[colours[i]]);
     }
-    */
+*/
 
     //at this point we have a vector of colours in decreasing order of number of pixels and the colour of the control points
     //finding x and y for each colour
@@ -189,14 +193,14 @@ int main(int argc, const char * argv[])
 
     for(k=0; k<5; k++)//the first 5 colours
     {
-        if(colours[k]!=0)
+        if(colours[k]>=0)
         {
             fprintf(fout, "C%d= [\n", k);
             for(i=0; i<hauteur*largeur; i++)
             {
                 unsigned short x, y; //the coords to compute
                 calc_coords(i, largeur, hauteur, &x, &y);
-                if(Pixmap[i]==colours[k]) fprintf(fout, "%d, %d;\n", x, y); //this makes the primitive Traces.txt, todo make it matlab compatible
+                if(Pixmap[i]==colours[k]) fprintf(fout, "%d, %d;\n", x, y); //this makes the primitive Traces.txt
 
             }
             fprintf(fout, "]; \n\n");
@@ -204,11 +208,11 @@ int main(int argc, const char * argv[])
     }
 
 
-    //generate  end of traces
+    //generate  end of traces file T={...}
     fprintf(fout, "T={");
     for(k=0; k<5; k++)//the first 5 colours
     {
-        if(colours[k]!=0)
+        if(colours[k]>=0)
         {
             fprintf(fout, "C%d ", k);
 
@@ -220,7 +224,7 @@ int main(int argc, const char * argv[])
     fprintf(stdout, "C: %d\nT: ", colour_control_points); //maybe add border as well?
     for (i = 0; i < 5; i++)
     {
-        if (colours[i] != 0)
+        if (colours[i] >= 0)
         {
             fprintf(stdout, "%d ", colours[i]);
         }
